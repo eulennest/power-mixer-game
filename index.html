@@ -2,124 +2,102 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Spiele-Generator - Josha's Game Mixer!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎮 Spiele-Generator</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: white;
             padding: 1rem;
+            touch-action: manipulation;
         }
         
         .container {
             text-align: center;
-            max-width: 900px;
-            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         h1 {
-            font-size: 3rem;
-            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-            margin-bottom: 1rem;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            font-size: 2rem;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            margin-bottom: 0.5rem;
         }
         
         .subtitle {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
             opacity: 0.9;
         }
         
         .input-area {
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         input {
-            padding: 1rem;
-            font-size: 1.2rem;
+            padding: 1.2rem;
+            font-size: 1.3rem;
             border: 3px solid #333;
             border-radius: 10px;
             text-align: center;
             font-family: inherit;
             font-weight: bold;
+            width: 100%;
         }
         
         .gen-btn {
-            padding: 1.5rem 3rem;
-            font-size: 2rem;
+            padding: 1.5rem;
+            font-size: 1.8rem;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             border: none;
             border-radius: 15px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            width: 100%;
+            touch-action: manipulation;
         }
         
-        .gen-btn:hover:not(:disabled) {
-            transform: scale(1.1);
-        }
-        
-        .gen-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .gen-btn:active {
+            transform: scale(0.98);
         }
         
         .game-area {
             background: rgba(255,255,255,0.3);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
+            border-radius: 15px;
+            padding: 1.5rem;
             display: none;
-            margin-top: 2rem;
+            margin-top: 1rem;
         }
         
         .game-area.show {
             display: block;
-            animation: slideIn 0.5s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .game-title {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #ffd700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -127,35 +105,36 @@
         }
         
         .game-type {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             margin-bottom: 1rem;
             opacity: 0.9;
         }
         
         .game-canvas {
             width: 100%;
-            max-width: 600px;
-            height: 400px;
-            border-radius: 15px;
-            margin: 1rem auto;
+            height: 60vh;
+            max-height: 400px;
+            border-radius: 10px;
+            margin: 1rem 0;
             display: block;
             background: #1a1a1a;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .game-controls {
-            margin-top: 1rem;
-            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            touch-action: none;
         }
         
         .score {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin: 1rem 0;
             color: #ffd700;
         }
         
+        .game-controls {
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+        
         .reset-btn {
-            padding: 1rem 2rem;
+            padding: 1rem;
             margin-top: 1rem;
             font-size: 1.2rem;
             background: rgba(255,255,255,0.3);
@@ -164,22 +143,30 @@
             color: white;
             cursor: pointer;
             font-weight: bold;
+            width: 100%;
+            touch-action: manipulation;
         }
         
-        .reset-btn:hover {
+        .reset-btn:active {
             background: rgba(255,255,255,0.5);
+        }
+        
+        @media (min-width: 768px) {
+            h1 { font-size: 3rem; }
+            .input-grid { flex-direction: row; }
+            .game-canvas { height: 400px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎮 SPIELE-GENERATOR 🎮</h1>
-        <div class="subtitle">Gib zwei Spiele ein und ich erstelle ein neues!</div>
+        <div class="subtitle">Zwei Spiele eingeben und loslegen!</div>
         
         <div class="input-area">
             <div class="input-grid">
-                <input type="text" id="game1" placeholder="Erstes Spiel" value="Minecraft">
-                <input type="text" id="game2" placeholder="Zweites Spiel" value="Pokemon">
+                <input type="text" id="game1" placeholder="Spiel 1" value="Minecraft">
+                <input type="text" id="game2" placeholder="Spiel 2" value="Pokemon">
             </div>
             <button class="gen-btn" id="generateBtn">🎨 SPIEL ERSTELLEN! 🎨</button>
         </div>
@@ -187,30 +174,37 @@
         <div class="game-area" id="gameArea">
             <div class="game-title" id="gameTitle">SUPER SPIEL</div>
             <div class="game-type" id="gameType">Sammel-Spiel</div>
-            <canvas id="gameCanvas" class="game-canvas" width="600" height="400"></canvas>
-            <div class="score">⭐ Punkte: <span id="score">0</span></div>
+            <canvas id="gameCanvas" class="game-canvas"></canvas>
+            <div class="score">⭐ <span id="score">0</span> Punkte</div>
             <div class="game-controls" id="gameControls">
-                <strong>Steuerung:</strong> Maus bewegen & klicken!
+                <strong>Steuerung:</strong> Finger bewegen!
             </div>
-            <button class="reset-btn" id="resetBtn">🔄 Neues Spiel erstellen</button>
+            <button class="reset-btn" id="resetBtn">🔄 Neues Spiel</button>
         </div>
     </div>
 
     <script>
-        const generateBtn = document.getElementById('generateBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const gameArea = document.getElementById('gameArea');
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const gameTitleEl = document.getElementById('gameTitle');
         const gameTypeEl = document.getElementById('gameType');
         const gameControlsEl = document.getElementById('gameControls');
+        const gameArea = document.getElementById('gameArea');
         
         let score = 0;
         let gameRunning = false;
         let currentGameType = null;
         let gameState = {};
+        
+        // Set canvas size
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
         
         const prefixes = ['Super', 'Mega', 'Ultra', 'Epic', 'Crazy', 'Wild', 'Hyper', 'Power', 'Turbo', 'Extreme'];
         const suffixes = ['Abenteuer', 'Quest', 'Jagd', 'World', 'Battle', 'Rush', 'Mania', 'Legends', 'Force', 'Strike'];
@@ -218,69 +212,101 @@
         const gameTypes = [
             {
                 name: 'Sammel-Spiel',
-                controls: 'Maus bewegen - sammle alle bunten Objekte!',
+                controls: 'Finger bewegen - sammle alle bunten Objekte!',
                 init: initCollectGame,
                 update: updateCollectGame
             },
             {
                 name: 'Ausweich-Spiel',
-                controls: 'Maus bewegen - weiche den roten Objekten aus!',
+                controls: 'Finger bewegen - weiche den roten Objekten aus!',
                 init: initDodgeGame,
                 update: updateDodgeGame
             },
             {
                 name: 'Klick-Jagd',
-                controls: 'Klicke auf die Ziele bevor sie verschwinden!',
+                controls: 'Tippe auf die Ziele bevor sie verschwinden!',
                 init: initClickGame,
                 update: updateClickGame
             },
             {
                 name: 'Fang-Spiel',
-                controls: 'Maus bewegen - fange die goldenen Sterne!',
+                controls: 'Finger bewegen - fange die goldenen Sterne!',
                 init: initCatchGame,
                 update: updateCatchGame
             },
             {
                 name: 'Memory-Rennen',
-                controls: 'Klicke Paare an - finde alle zusammen!',
+                controls: 'Tippe Paare an - finde alle zusammen!',
                 init: initMemoryGame,
                 update: updateMemoryGame
             }
         ];
         
-        generateBtn.addEventListener('click', generateGame);
-        resetBtn.addEventListener('click', () => {
+        document.getElementById('generateBtn').addEventListener('click', generateGame);
+        document.getElementById('resetBtn').addEventListener('click', () => {
             gameArea.classList.remove('show');
             stopGame();
         });
         
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('click', handleClick);
+        // Touch/Mouse handling
+        function getPointerPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return {
+                x: ((touch.clientX - rect.left) / rect.width) * canvas.width,
+                y: ((touch.clientY - rect.top) / rect.height) * canvas.height
+            };
+        }
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameRunning) return;
+            const pos = getPointerPos(e);
+            gameState.lastClickX = pos.x;
+            gameState.lastClickY = pos.y;
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!gameRunning) return;
+            const pos = getPointerPos(e);
+            gameState.mouseX = pos.x;
+            gameState.mouseY = pos.y;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameRunning) return;
+            const pos = getPointerPos(e);
+            gameState.mouseX = pos.x;
+            gameState.mouseY = pos.y;
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning) return;
+            const pos = getPointerPos(e);
+            gameState.lastClickX = pos.x;
+            gameState.lastClickY = pos.y;
+        });
         
         function generateGame() {
             const game1 = document.getElementById('game1').value.trim() || 'Spiel 1';
             const game2 = document.getElementById('game2').value.trim() || 'Spiel 2';
             
-            // Generate name
             const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
             const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-            const gameName = `${prefix} ${suffix}`;
-            gameTitleEl.textContent = gameName.toUpperCase();
+            gameTitleEl.textContent = `${prefix} ${suffix}`.toUpperCase();
             
-            // Pick random game type
             currentGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
             gameTypeEl.textContent = currentGameType.name;
             gameControlsEl.innerHTML = `<strong>Steuerung:</strong> ${currentGameType.controls}`;
             
-            // Reset
             score = 0;
             scoreEl.textContent = score;
             gameState = {};
             
-            // Show game
+            resizeCanvas();
             gameArea.classList.add('show');
             
-            // Initialize and start
             currentGameType.init();
             startGame();
         }
@@ -297,62 +323,38 @@
         
         function gameLoop() {
             if (!gameRunning) return;
-            
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            if (currentGameType) {
-                currentGameType.update();
-            }
-            
+            if (currentGameType) currentGameType.update();
             requestAnimationFrame(gameLoop);
         }
         
-        function handleMouseMove(e) {
-            if (!gameRunning) return;
-            const rect = canvas.getBoundingClientRect();
-            gameState.mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-            gameState.mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
-        }
-        
-        function handleClick(e) {
-            if (!gameRunning) return;
-            const rect = canvas.getBoundingClientRect();
-            const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-            const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
-            gameState.lastClickX = clickX;
-            gameState.lastClickY = clickY;
-        }
-        
-        // GAME 1: Collect Game
         function initCollectGame() {
-            gameState.player = { x: 300, y: 350, size: 40 };
+            gameState.player = { x: canvas.width / 2, y: canvas.height * 0.8, size: Math.min(canvas.width, canvas.height) * 0.1 };
             gameState.objects = [];
             gameState.spawnTimer = 0;
         }
         
         function updateCollectGame() {
             const player = gameState.player;
-            player.x = gameState.mouseX || 300;
+            player.x = gameState.mouseX || canvas.width / 2;
             
-            // Spawn objects
             if (gameState.spawnTimer++ % 30 === 0) {
+                const size = canvas.width * 0.05 + Math.random() * canvas.width * 0.05;
                 gameState.objects.push({
-                    x: Math.random() * (canvas.width - 40),
-                    y: -20,
-                    size: 20 + Math.random() * 20,
-                    speed: 2 + Math.random() * 3,
+                    x: Math.random() * (canvas.width - size),
+                    y: -size,
+                    size: size,
+                    speed: canvas.height * 0.005 + Math.random() * canvas.height * 0.01,
                     color: ['#fbbf24', '#60a5fa', '#a78bfa', '#34d399'][Math.floor(Math.random() * 4)]
                 });
             }
             
-            // Draw player
             ctx.fillStyle = '#4ade80';
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Update objects
             gameState.objects = gameState.objects.filter(obj => {
                 obj.y += obj.speed;
                 ctx.fillStyle = obj.color;
@@ -371,23 +373,23 @@
             });
         }
         
-        // GAME 2: Dodge Game
         function initDodgeGame() {
-            gameState.player = { x: 300, y: 350, size: 30 };
+            gameState.player = { x: canvas.width / 2, y: canvas.height * 0.8, size: canvas.width * 0.075 };
             gameState.enemies = [];
             gameState.spawnTimer = 0;
         }
         
         function updateDodgeGame() {
             const player = gameState.player;
-            player.x = gameState.mouseX || 300;
+            player.x = gameState.mouseX || canvas.width / 2;
             
             if (gameState.spawnTimer++ % 25 === 0) {
+                const size = canvas.width * 0.08;
                 gameState.enemies.push({
                     x: Math.random() * canvas.width,
-                    y: -20,
-                    size: 30,
-                    speed: 3 + Math.random() * 2
+                    y: -size,
+                    size: size,
+                    speed: canvas.height * 0.008 + Math.random() * canvas.height * 0.005
                 });
             }
             
@@ -396,7 +398,6 @@
             ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
             ctx.fill();
             
-            let allDodged = true;
             gameState.enemies = gameState.enemies.filter(enemy => {
                 enemy.y += enemy.speed;
                 ctx.fillStyle = '#ef4444';
@@ -404,9 +405,6 @@
                 
                 const dx = enemy.x - player.x;
                 const dy = enemy.y - player.y;
-                if (Math.sqrt(dx * dx + dy * dy) < (enemy.size + player.size) / 2) {
-                    allDodged = false;
-                }
                 
                 if (enemy.y > canvas.height) {
                     score += 5;
@@ -416,7 +414,6 @@
             });
         }
         
-        // GAME 3: Click Game
         function initClickGame() {
             gameState.targets = [];
             gameState.spawnTimer = 0;
@@ -424,10 +421,11 @@
         
         function updateClickGame() {
             if (gameState.spawnTimer++ % 60 === 0) {
+                const size = canvas.width * 0.12;
                 gameState.targets.push({
-                    x: 50 + Math.random() * (canvas.width - 100),
-                    y: 50 + Math.random() * (canvas.height - 100),
-                    size: 40,
+                    x: size + Math.random() * (canvas.width - size * 2),
+                    y: size + Math.random() * (canvas.height - size * 2),
+                    size: size,
                     life: 120
                 });
             }
@@ -455,34 +453,34 @@
             gameState.lastClickX = null;
         }
         
-        // GAME 4: Catch Game
         function initCatchGame() {
-            gameState.player = { x: 300, y: 350, size: 50 };
+            gameState.player = { x: canvas.width / 2, y: canvas.height * 0.8, size: canvas.width * 0.15 };
             gameState.stars = [];
             gameState.spawnTimer = 0;
         }
         
         function updateCatchGame() {
             const player = gameState.player;
-            player.x = gameState.mouseX || 300;
+            player.x = gameState.mouseX || canvas.width / 2;
             
             if (gameState.spawnTimer++ % 40 === 0) {
+                const size = canvas.width * 0.06;
                 gameState.stars.push({
                     x: Math.random() * canvas.width,
-                    y: -20,
-                    size: 25,
-                    speed: 2 + Math.random() * 2,
+                    y: -size,
+                    size: size,
+                    speed: canvas.height * 0.005 + Math.random() * canvas.height * 0.005,
                     wobble: Math.random() * Math.PI * 2
                 });
             }
             
             ctx.fillStyle = '#a78bfa';
-            ctx.fillRect(player.x - player.size / 2, player.y - 20, player.size, 40);
+            ctx.fillRect(player.x - player.size / 2, player.y - player.size * 0.3, player.size, player.size * 0.6);
             
             gameState.stars = gameState.stars.filter(star => {
                 star.y += star.speed;
                 star.wobble += 0.1;
-                const wobbleX = Math.sin(star.wobble) * 20;
+                const wobbleX = Math.sin(star.wobble) * (canvas.width * 0.05);
                 
                 ctx.fillStyle = '#fbbf24';
                 ctx.beginPath();
@@ -497,7 +495,7 @@
                 ctx.fill();
                 
                 if (Math.abs((star.x + wobbleX) - player.x) < (star.size + player.size) / 2 &&
-                    Math.abs(star.y - player.y) < 30) {
+                    Math.abs(star.y - player.y) < player.size * 0.5) {
                     score += 20;
                     scoreEl.textContent = score;
                     return false;
@@ -506,7 +504,6 @@
             });
         }
         
-        // GAME 5: Memory Game
         function initMemoryGame() {
             const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
             gameState.cards = [];
@@ -516,11 +513,16 @@
             const pairs = colors.slice(0, 6);
             const deck = [...pairs, ...pairs].sort(() => Math.random() - 0.5);
             
+            const cardSize = Math.min(canvas.width / 4.5, canvas.height / 4.5);
+            const spacing = cardSize * 0.15;
+            const startX = (canvas.width - (cardSize * 4 + spacing * 3)) / 2;
+            const startY = (canvas.height - (cardSize * 3 + spacing * 2)) / 2;
+            
             for (let i = 0; i < 12; i++) {
                 gameState.cards.push({
-                    x: 80 + (i % 4) * 130,
-                    y: 80 + Math.floor(i / 4) * 110,
-                    size: 100,
+                    x: startX + (i % 4) * (cardSize + spacing) + cardSize / 2,
+                    y: startY + Math.floor(i / 4) * (cardSize + spacing) + cardSize / 2,
+                    size: cardSize,
                     color: deck[i],
                     id: i
                 });
@@ -533,7 +535,7 @@
                 ctx.fillStyle = isFlipped ? card.color : '#374151';
                 ctx.fillRect(card.x - card.size / 2, card.y - card.size / 2, card.size, card.size);
                 ctx.strokeStyle = 'white';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2;
                 ctx.strokeRect(card.x - card.size / 2, card.y - card.size / 2, card.size, card.size);
             });
             
