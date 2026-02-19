@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 KasperCast - Spiele Mixer!</title>
+    <title>🎮 Spiele-Generator - Josha's Game Mixer!</title>
     <style>
         * {
             margin: 0;
@@ -46,7 +46,7 @@
             opacity: 0.9;
         }
         
-        .upload-area {
+        .input-area {
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
             border-radius: 20px;
@@ -54,59 +54,24 @@
             margin-bottom: 2rem;
         }
         
-        .upload-grid {
+        .input-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         
-        .upload-box {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            color: #333;
-            cursor: pointer;
-            transition: transform 0.2s;
-            position: relative;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .upload-box:hover {
-            transform: scale(1.02);
-        }
-        
-        .upload-box.has-image {
-            padding: 0;
-            overflow: hidden;
-        }
-        
-        .preview-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 15px;
-        }
-        
-        .upload-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-        
-        .upload-text {
+        input {
+            padding: 1rem;
             font-size: 1.2rem;
+            border: 3px solid #333;
+            border-radius: 10px;
+            text-align: center;
+            font-family: inherit;
             font-weight: bold;
         }
         
-        input[type="file"] {
-            display: none;
-        }
-        
-        .mix-btn {
+        .gen-btn {
             padding: 1.5rem 3rem;
             font-size: 2rem;
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -119,25 +84,25 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         }
         
-        .mix-btn:hover:not(:disabled) {
+        .gen-btn:hover:not(:disabled) {
             transform: scale(1.1);
         }
         
-        .mix-btn:disabled {
+        .gen-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
         
-        .result {
+        .game-area {
             background: rgba(255,255,255,0.3);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 2rem;
-            margin-top: 2rem;
             display: none;
+            margin-top: 2rem;
         }
         
-        .result.show {
+        .game-area.show {
             display: block;
             animation: slideIn 0.5s;
         }
@@ -153,44 +118,34 @@
             }
         }
         
-        .result-canvas {
-            width: 100%;
-            max-width: 600px;
-            border-radius: 15px;
-            margin: 1rem auto;
-            display: block;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .game-name {
+        .game-title {
             font-size: 2.5rem;
             font-weight: bold;
             color: #ffd700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin: 1rem 0;
+            margin-bottom: 1rem;
         }
         
-        .game-desc {
-            font-size: 1.3rem;
-            line-height: 1.6;
-            margin: 1rem 0;
-            background: rgba(0,0,0,0.2);
-            padding: 1rem;
-            border-radius: 10px;
+        .game-canvas {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border-radius: 15px;
+            margin: 1rem auto;
+            display: block;
+            background: #1a1a1a;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+        .game-controls {
             margin-top: 1rem;
+            font-size: 1.2rem;
         }
         
-        .feature {
-            background: rgba(255,255,255,0.2);
-            padding: 1rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
+        .score {
+            font-size: 2rem;
+            margin: 1rem 0;
+            color: #ffd700;
         }
         
         .reset-btn {
@@ -208,236 +163,183 @@
         .reset-btn:hover {
             background: rgba(255,255,255,0.5);
         }
-
-        @media (max-width: 768px) {
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 KASPERCAST 🎮</h1>
-        <div class="subtitle">Die Spiele-Kombinations-Maschine!</div>
+        <h1>🎮 SPIELE-GENERATOR 🎮</h1>
+        <div class="subtitle">Gib zwei Spiele ein und ich erstelle ein neues!</div>
         
-        <div class="upload-area">
-            <div class="upload-grid">
-                <div class="upload-box" id="uploadBox1">
-                    <div class="upload-icon">📸</div>
-                    <div class="upload-text">Erstes Spiel<br>(Screenshot hochladen)</div>
-                    <input type="file" id="fileInput1" accept="image/*">
-                </div>
-                
-                <div class="upload-box" id="uploadBox2">
-                    <div class="upload-icon">📸</div>
-                    <div class="upload-text">Zweites Spiel<br>(Screenshot hochladen)</div>
-                    <input type="file" id="fileInput2" accept="image/*">
-                </div>
+        <div class="input-area">
+            <div class="input-grid">
+                <input type="text" id="game1" placeholder="Erstes Spiel" value="Minecraft">
+                <input type="text" id="game2" placeholder="Zweites Spiel" value="Pokemon">
             </div>
-            
-            <button class="mix-btn" id="mixBtn" disabled>🎨 KOMBINIEREN! 🎨</button>
+            <button class="gen-btn" id="generateBtn">🎨 SPIEL ERSTELLEN! 🎨</button>
         </div>
         
-        <div class="result" id="result">
-            <div class="game-name" id="gameName">SUPER SPIEL</div>
-            <canvas id="resultCanvas" class="result-canvas" width="800" height="400"></canvas>
-            <div class="game-desc" id="gameDesc"></div>
-            <div class="features" id="features"></div>
-            <button class="reset-btn" id="resetBtn">🔄 Neue Kombination</button>
+        <div class="game-area" id="gameArea">
+            <div class="game-title" id="gameTitle">SUPER SPIEL</div>
+            <canvas id="gameCanvas" class="game-canvas" width="600" height="400"></canvas>
+            <div class="score">⭐ Punkte: <span id="score">0</span></div>
+            <div class="game-controls">
+                <strong>Steuerung:</strong> Maus bewegen & klicken!
+            </div>
+            <button class="reset-btn" id="resetBtn">🔄 Neues Spiel erstellen</button>
         </div>
     </div>
 
     <script>
-        let image1 = null;
-        let image2 = null;
-        
-        const uploadBox1 = document.getElementById('uploadBox1');
-        const uploadBox2 = document.getElementById('uploadBox2');
-        const fileInput1 = document.getElementById('fileInput1');
-        const fileInput2 = document.getElementById('fileInput2');
-        const mixBtn = document.getElementById('mixBtn');
+        const generateBtn = document.getElementById('generateBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const result = document.getElementById('result');
+        const gameArea = document.getElementById('gameArea');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const gameTitleEl = document.getElementById('gameTitle');
         
-        // Game name generators
-        const prefixes = ['Super', 'Mega', 'Ultra', 'Hyper', 'Turbo', 'Extreme', 'Epic', 'Legendary', 'Ultimate', 'Mystic'];
-        const middles = ['Kraft', 'Abenteuer', 'Schlacht', 'Rennen', 'Quest', 'Krieger', 'Held', 'Champion', 'Meister', 'König'];
-        const suffixes = ['X', 'Pro', 'Deluxe', 'Plus', 'Turbo', 'Mega', 'Supreme', 'Elite', 'Prime', 'Max'];
+        let score = 0;
+        let gameRunning = false;
+        let gameObjects = [];
+        let player = { x: 300, y: 350, size: 40, color: '#4ade80' };
         
-        const features = [
-            '⚡ Blitzschnelle Action',
-            '🎯 Präzise Steuerung',
-            '🌈 Bunte Grafik',
-            '🎵 Epische Musik',
-            '🏆 Achievements sammeln',
-            '👥 Mehrspieler-Modus',
-            '🌍 Riesige Welten',
-            '🔥 Spezial-Angriffe',
-            '💎 Geheime Level',
-            '🚀 Power-Ups',
-            '🎭 Verschiedene Charaktere',
-            '⭐ Highscore-System'
-        ];
+        const prefixes = ['Super', 'Mega', 'Ultra', 'Epic', 'Crazy', 'Wild', 'Hyper', 'Power'];
+        const suffixes = ['Abenteuer', 'Quest', 'Jagd', 'World', 'Battle', 'Rush', 'Mania', 'Legends'];
         
-        // Upload Box 1
-        uploadBox1.addEventListener('click', () => fileInput1.click());
-        fileInput1.addEventListener('change', (e) => handleFile(e, 1));
-        
-        // Upload Box 2
-        uploadBox2.addEventListener('click', () => fileInput2.click());
-        fileInput2.addEventListener('change', (e) => handleFile(e, 2));
-        
-        function handleFile(event, boxNumber) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    if (boxNumber === 1) {
-                        image1 = img;
-                        displayPreview(img, uploadBox1);
-                    } else {
-                        image2 = img;
-                        displayPreview(img, uploadBox2);
-                    }
-                    
-                    if (image1 && image2) {
-                        mixBtn.disabled = false;
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        function displayPreview(img, box) {
-            box.innerHTML = '';
-            box.classList.add('has-image');
-            const previewImg = document.createElement('img');
-            previewImg.src = img.src;
-            previewImg.className = 'preview-image';
-            box.appendChild(previewImg);
-        }
-        
-        mixBtn.addEventListener('click', () => {
-            generateGame();
-            result.classList.add('show');
+        generateBtn.addEventListener('click', generateGame);
+        resetBtn.addEventListener('click', () => {
+            gameArea.classList.remove('show');
+            stopGame();
         });
         
-        resetBtn.addEventListener('click', () => {
-            result.classList.remove('show');
-            image1 = null;
-            image2 = null;
-            mixBtn.disabled = true;
-            
-            uploadBox1.classList.remove('has-image');
-            uploadBox1.innerHTML = `
-                <div class="upload-icon">📸</div>
-                <div class="upload-text">Erstes Spiel<br>(Screenshot hochladen)</div>
-            `;
-            
-            uploadBox2.classList.remove('has-image');
-            uploadBox2.innerHTML = `
-                <div class="upload-icon">📸</div>
-                <div class="upload-text">Zweites Spiel<br>(Screenshot hochladen)</div>
-            `;
-            
-            fileInput1.value = '';
-            fileInput2.value = '';
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            player.x = ((e.clientX - rect.left) / rect.width) * canvas.width;
+        });
+        
+        canvas.addEventListener('click', () => {
+            if (!gameRunning) return;
+            score += 5;
+            scoreEl.textContent = score;
         });
         
         function generateGame() {
-            // Generate random game name
+            const game1 = document.getElementById('game1').value.trim() || 'Spiel 1';
+            const game2 = document.getElementById('game2').value.trim() || 'Spiel 2';
+            
+            // Generate name
             const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-            const middle = middles[Math.floor(Math.random() * middles.length)];
             const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-            const gameName = `${prefix} ${middle} ${suffix}`;
+            const gameName = `${prefix} ${suffix}`;
+            gameTitleEl.textContent = gameName.toUpperCase();
             
-            document.getElementById('gameName').textContent = gameName.toUpperCase();
+            // Reset game
+            score = 0;
+            scoreEl.textContent = score;
+            gameObjects = [];
             
-            // Generate description
-            const descriptions = [
-                `Ein spannendes ${middle}-Spiel mit unglaublichen Fähigkeiten!`,
-                `Tauche ein in eine Welt voller Abenteuer und Action!`,
-                `Das ultimative Spiel das beide Welten vereint!`,
-                `Erlebe eine neue Dimension von Spielspaß!`,
-                `Die perfekte Mischung aus beiden Spielen!`
-            ];
-            document.getElementById('gameDesc').textContent = descriptions[Math.floor(Math.random() * descriptions.length)];
+            // Show game
+            gameArea.classList.add('show');
             
-            // Generate random features
-            const shuffled = [...features].sort(() => 0.5 - Math.random());
-            const selectedFeatures = shuffled.slice(0, 6);
-            
-            const featuresDiv = document.getElementById('features');
-            featuresDiv.innerHTML = '';
-            selectedFeatures.forEach(feature => {
-                const div = document.createElement('div');
-                div.className = 'feature';
-                div.textContent = feature;
-                featuresDiv.appendChild(div);
-            });
-            
-            // Combine images on canvas
-            combineImages();
+            // Start game
+            startGame();
         }
         
-        function combineImages() {
-            const canvas = document.getElementById('resultCanvas');
-            const ctx = canvas.getContext('2d');
+        function startGame() {
+            gameRunning = true;
             
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Spawn objects
+            setInterval(() => {
+                if (!gameRunning) return;
+                spawnObject();
+            }, 1000);
             
-            // Create gradient background
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#667eea');
-            gradient.addColorStop(1, '#764ba2');
-            ctx.fillStyle = gradient;
+            // Game loop
+            gameLoop();
+        }
+        
+        function stopGame() {
+            gameRunning = false;
+            gameObjects = [];
+        }
+        
+        function spawnObject() {
+            const colors = ['#fbbf24', '#60a5fa', '#f87171', '#a78bfa', '#34d399'];
+            const shapes = ['circle', 'square', 'triangle'];
+            
+            gameObjects.push({
+                x: Math.random() * (canvas.width - 40),
+                y: -20,
+                size: 20 + Math.random() * 20,
+                speed: 2 + Math.random() * 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: shapes[Math.floor(Math.random() * shapes.length)]
+            });
+        }
+        
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Clear
+            ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Draw first image (left half)
-            ctx.save();
-            ctx.globalAlpha = 0.8;
-            const scale1 = Math.max(canvas.width / 2 / image1.width, canvas.height / image1.height);
-            const x1 = 0;
-            const y1 = (canvas.height - image1.height * scale1) / 2;
-            ctx.drawImage(image1, x1, y1, image1.width * scale1, image1.height * scale1);
-            ctx.restore();
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
+            ctx.fill();
             
-            // Draw second image (right half)
-            ctx.save();
-            ctx.globalAlpha = 0.8;
-            const scale2 = Math.max(canvas.width / 2 / image2.width, canvas.height / image2.height);
-            const x2 = canvas.width / 2;
-            const y2 = (canvas.height - image2.height * scale2) / 2;
-            ctx.drawImage(image2, x2, y2, image2.width * scale2, image2.height * scale2);
-            ctx.restore();
-            
-            // Draw blend effect in the middle
-            const blendGradient = ctx.createLinearGradient(canvas.width / 2 - 100, 0, canvas.width / 2 + 100, 0);
-            blendGradient.addColorStop(0, 'rgba(255,255,255,0)');
-            blendGradient.addColorStop(0.5, 'rgba(255,255,255,0.3)');
-            blendGradient.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = blendGradient;
-            ctx.fillRect(canvas.width / 2 - 100, 0, 200, canvas.height);
-            
-            // Draw sparkle effect
+            // Draw eyes
             ctx.fillStyle = 'white';
-            for (let i = 0; i < 50; i++) {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * canvas.height;
-                const size = Math.random() * 3;
-                ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.beginPath();
+            ctx.arc(player.x - 8, player.y - 5, 5, 0, Math.PI * 2);
+            ctx.arc(player.x + 8, player.y - 5, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(player.x - 8, player.y - 5, 3, 0, Math.PI * 2);
+            ctx.arc(player.x + 8, player.y - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Update and draw objects
+            gameObjects = gameObjects.filter(obj => {
+                obj.y += obj.speed;
+                
+                // Draw object
+                ctx.fillStyle = obj.color;
+                if (obj.shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(obj.x, obj.y, obj.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (obj.shape === 'square') {
+                    ctx.fillRect(obj.x - obj.size / 2, obj.y - obj.size / 2, obj.size, obj.size);
+                } else if (obj.shape === 'triangle') {
+                    ctx.beginPath();
+                    ctx.moveTo(obj.x, obj.y - obj.size / 2);
+                    ctx.lineTo(obj.x - obj.size / 2, obj.y + obj.size / 2);
+                    ctx.lineTo(obj.x + obj.size / 2, obj.y + obj.size / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                
+                // Check collision
+                const dx = obj.x - player.x;
+                const dy = obj.y - player.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < (obj.size + player.size) / 2) {
+                    score += 10;
+                    scoreEl.textContent = score;
+                    return false; // Remove object
+                }
+                
+                return obj.y < canvas.height + 50;
+            });
+            
+            requestAnimationFrame(gameLoop);
         }
     </script>
 </body>
