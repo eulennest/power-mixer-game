@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Power Mixer - Kombiniere Superkräfte!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .mixer-area {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .power-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .power-selector {
+            background: white;
+            color: #333;
+            border-radius: 15px;
+            padding: 1.5rem;
+        }
+        
+        .power-selector h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .power-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: 3px solid #333;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .power-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .power-btn.selected {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: #00f2fe;
+            box-shadow: 0 0 20px rgba(0,242,254,0.5);
+        }
+        
+        .mix-btn {
+            padding: 1.5rem 3rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .mix-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+        }
+        
+        .mix-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero {
+            font-size: 5rem;
+            margin: 1rem 0;
+            animation: spin 2s ease-in-out;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(0); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .hero-name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin: 1rem 0;
+        }
+        
+        .abilities {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .ability {
+            font-size: 1.3rem;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        
+        .game-area {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .player {
+            position: absolute;
+            font-size: 3rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .controls {
+            margin-top: 1rem;
+        }
+        
+        .control-btn {
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            font-size: 1.2rem;
+            background: rgba(255,255,255,0.3);
+            border: 2px solid white;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .score {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 POWER MIXER 🎮</h1>
+        
+        <div class="mixer-area">
+            <div class="power-selection">
+                <div class="power-selector">
+                    <h3>Erste Kraft wählen:</h3>
+                    <button class="power-btn" data-power="fire" data-slot="1">🔥 Feuer</button>
+                    <button class="power-btn" data-power="water" data-slot="1">💧 Wasser</button>
+                    <button class="power-btn" data-power="speed" data-slot="1">⚡ Schnelligkeit</button>
+                    <button class="power-btn" data-power="strong" data-slot="1">💪 Stärke</button>
+                </div>
+                
+                <div class="power-selector">
+                    <h3>Zweite Kraft wählen:</h3>
+                    <button class="power-btn" data-power="ice" data-slot="2">❄️ Eis</button>
+                    <button class="power-btn" data-power="wind" data-slot="2">🌪️ Wind</button>
+                    <button class="power-btn" data-power="jump" data-slot="2">🦘 Sprungkraft</button>
+                    <button class="power-btn" data-power="shield" data-slot="2">🛡️ Schild</button>
+                </div>
+            </div>
+            
+            <button class="mix-btn" id="mixBtn" disabled>🎨 KOMBINIEREN! 🎨</button>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="hero" id="heroEmoji">🦸</div>
+            <div class="hero-name" id="heroName">SUPER HELD</div>
+            <div class="abilities" id="abilities"></div>
+            
+            <div class="game-area" id="gameArea">
+                <div class="score">⭐ Punkte: <span id="score">0</span></div>
+                <div class="player" id="player">🦸</div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="ability1Btn">Kraft 1 nutzen!</button>
+                <button class="control-btn" id="ability2Btn">Kraft 2 nutzen!</button>
+                <button class="control-btn" id="resetBtn">Neu kombinieren</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPowers = { slot1: null, slot2: null };
+        let score = 0;
+        let playerX = 50;
+        let playerY = 50;
+        
+        const combinations = {
+            'fire-ice': {
+                name: 'DAMPF-MEISTER',
+                emoji: '☁️',
+                abilities: ['Nebel erzeugen', 'Unsichtbar werden'],
+                power1: 'Dampfwolke!',
+                power2: 'Verstecken!'
+            },
+            'fire-wind': {
+                name: 'FEUER-TORNADO',
+                emoji: '🌪️🔥',
+                abilities: ['Wirbelndes Feuer', 'Fliegende Flammen'],
+                power1: 'Feuerwirbel!',
+                power2: 'Flammen-Flug!'
+            },
+            'fire-jump': {
+                name: 'RAKETEN-SPRINGER',
+                emoji: '🚀',
+                abilities: ['Feuer-Sprung', 'Himmelsstürmer'],
+                power1: 'Raketen-Jump!',
+                power2: 'Feuer-Boost!'
+            },
+            'fire-shield': {
+                name: 'FEUER-RITTER',
+                emoji: '🛡️🔥',
+                abilities: ['Brennender Schutz', 'Flammen-Barriere'],
+                power1: 'Feuer-Schild!',
+                power2: 'Heiße Wand!'
+            },
+            'water-ice': {
+                name: 'EIS-KÖNIG',
+                emoji: '🧊👑',
+                abilities: ['Alles einfrieren', 'Eispalast bauen'],
+                power1: 'Einfrieren!',
+                power2: 'Eis-Burg!'
+            },
+            'water-wind': {
+                name: 'STURM-SURFER',
+                emoji: '🌊🌪️',
+                abilities: ['Wellen reiten', 'Wassertornado'],
+                power1: 'Tsunami!',
+                power2: 'Sturm-Welle!'
+            },
+            'water-jump': {
+                name: 'WASSER-SPRINGER',
+                emoji: '🐬',
+                abilities: ['Hoch tauchen', 'Wasserfontäne'],
+                power1: 'Delfin-Jump!',
+                power2: 'Wasser-Boost!'
+            },
+            'water-shield': {
+                name: 'OZEAN-WÄCHTER',
+                emoji: '🌊🛡️',
+                abilities: ['Wasser-Barriere', 'Blasen-Schild'],
+                power1: 'Wasser-Mauer!',
+                power2: 'Blasen-Schutz!'
+            },
+            'speed-ice': {
+                name: 'BLITZ-GLEITER',
+                emoji: '⚡❄️',
+                abilities: ['Eisschnell gleiten', 'Frost-Dash'],
+                power1: 'Eis-Sprint!',
+                power2: 'Blitz-Drift!'
+            },
+            'speed-wind': {
+                name: 'SONIC-STORM',
+                emoji: '💨⚡',
+                abilities: ['Überschall', 'Wind-Dash'],
+                power1: 'Turbo!',
+                power2: 'Schall-Boom!'
+            },
+            'speed-jump': {
+                name: 'BLITZ-SPRINGER',
+                emoji: '⚡🦘',
+                abilities: ['Mega schnelle Sprünge', 'Raketenschnell'],
+                power1: 'Turbo-Jump!',
+                power2: 'Speed-Hop!'
+            },
+            'speed-shield': {
+                name: 'TEMPO-WÄCHTER',
+                emoji: '⚡🛡️',
+                abilities: ['Schnell ausweichen', 'Blitz-Reflex'],
+                power1: 'Turbo-Dodge!',
+                power2: 'Schnell-Block!'
+            },
+            'strong-ice': {
+                name: 'FROST-RIESE',
+                emoji: '💪❄️',
+                abilities: ['Eisberge werfen', 'Frost-Schlag'],
+                power1: 'Eisberg-Wurf!',
+                power2: 'Frost-Punch!'
+            },
+            'strong-wind': {
+                name: 'STURM-GIGANT',
+                emoji: '💪🌪️',
+                abilities: ['Wirbelstürme schlagen', 'Wind-Kraft'],
+                power1: 'Tornado-Faust!',
+                power2: 'Sturm-Power!'
+            },
+            'strong-jump': {
+                name: 'SUPER-HÜPFER',
+                emoji: '💪🦘',
+                abilities: ['Mega hohe Sprünge', 'Kraftvolle Landung'],
+                power1: 'Power-Jump!',
+                power2: 'Erd-Beben!'
+            },
+            'strong-shield': {
+                name: 'MEGA-BESCHÜTZER',
+                emoji: '💪🛡️',
+                abilities: ['Unzerstörbar', 'Alles abwehren'],
+                power1: 'Titan-Schild!',
+                power2: 'Mega-Block!'
+            }
+        };
+        
+        // Power selection
+        document.querySelectorAll('.power-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const power = btn.dataset.power;
+                const slot = btn.dataset.slot;
+                
+                // Deselect others in same slot
+                document.querySelectorAll(`[data-slot="${slot}"]`).forEach(b => {
+                    b.classList.remove('selected');
+                });
+                
+                btn.classList.add('selected');
+                selectedPowers[`slot${slot}`] = power;
+                
+                // Enable mix button if both selected
+                if (selectedPowers.slot1 && selectedPowers.slot2) {
+                    document.getElementById('mixBtn').disabled = false;
+                }
+            });
+        });
+        
+        // Mix button
+        document.getElementById('mixBtn').addEventListener('click', () => {
+            const key = `${selectedPowers.slot1}-${selectedPowers.slot2}`;
+            const combo = combinations[key];
+            
+            if (combo) {
+                document.getElementById('heroEmoji').textContent = combo.emoji;
+                document.getElementById('heroName').textContent = combo.name;
+                
+                const abilitiesDiv = document.getElementById('abilities');
+                abilitiesDiv.innerHTML = '<h3>🌟 FÄHIGKEITEN:</h3>';
+                combo.abilities.forEach(ability => {
+                    const div = document.createElement('div');
+                    div.className = 'ability';
+                    div.textContent = '⚡ ' + ability;
+                    abilitiesDiv.appendChild(div);
+                });
+                
+                document.getElementById('player').textContent = combo.emoji;
+                document.getElementById('ability1Btn').textContent = combo.power1;
+                document.getElementById('ability2Btn').textContent = combo.power2;
+                
+                document.getElementById('result').classList.add('show');
+                score = 0;
+                document.getElementById('score').textContent = score;
+            }
+        });
+        
+        // Game controls
+        document.getElementById('ability1Btn').addEventListener('click', () => {
+            score += 10;
+            document.getElementById('score').textContent = score;
+            const player = document.getElementById('player');
+            player.style.transform = 'scale(1.5) rotate(360deg)';
+            setTimeout(() => {
+                player.style.transform = 'scale(1) rotate(0deg)';
+            }, 500);
+        });
+        
+        document.getElementById('ability2Btn').addEventListener('click', () => {
+            score += 15;
+            document.getElementById('score').textContent = score;
+            const player = document.getElementById('player');
+            playerY -= 30;
+            if (playerY < 0) playerY = 100;
+            player.style.top = playerY + '%';
+            player.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                player.style.transform = 'scale(1)';
+            }, 500);
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            document.getElementById('result').classList.remove('show');
+            selectedPowers = { slot1: null, slot2: null };
+            document.querySelectorAll('.power-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById('mixBtn').disabled = true;
+            playerX = 50;
+            playerY = 50;
+            document.getElementById('player').style.left = '50%';
+            document.getElementById('player').style.top = '50%';
+        });
+        
+        // Click player to move
+        document.getElementById('player').addEventListener('click', () => {
+            score += 5;
+            document.getElementById('score').textContent = score;
+            playerX = Math.random() * 80 + 10;
+            playerY = Math.random() * 80 + 10;
+            document.getElementById('player').style.left = playerX + '%';
+            document.getElementById('player').style.top = playerY + '%';
+        });
+    </script>
+</body>
+</html>
+<!-- Test Auto-Deploy -->
+<!-- Test 2 -->
+<!-- Test 3 -->
