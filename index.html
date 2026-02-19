@@ -123,7 +123,13 @@
             font-weight: bold;
             color: #ffd700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+        }
+        
+        .game-type {
+            font-size: 1.3rem;
             margin-bottom: 1rem;
+            opacity: 0.9;
         }
         
         .game-canvas {
@@ -180,9 +186,10 @@
         
         <div class="game-area" id="gameArea">
             <div class="game-title" id="gameTitle">SUPER SPIEL</div>
+            <div class="game-type" id="gameType">Sammel-Spiel</div>
             <canvas id="gameCanvas" class="game-canvas" width="600" height="400"></canvas>
             <div class="score">⭐ Punkte: <span id="score">0</span></div>
-            <div class="game-controls">
+            <div class="game-controls" id="gameControls">
                 <strong>Steuerung:</strong> Maus bewegen & klicken!
             </div>
             <button class="reset-btn" id="resetBtn">🔄 Neues Spiel erstellen</button>
@@ -197,14 +204,49 @@
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const gameTitleEl = document.getElementById('gameTitle');
+        const gameTypeEl = document.getElementById('gameType');
+        const gameControlsEl = document.getElementById('gameControls');
         
         let score = 0;
         let gameRunning = false;
-        let gameObjects = [];
-        let player = { x: 300, y: 350, size: 40, color: '#4ade80' };
+        let currentGameType = null;
+        let gameState = {};
         
-        const prefixes = ['Super', 'Mega', 'Ultra', 'Epic', 'Crazy', 'Wild', 'Hyper', 'Power'];
-        const suffixes = ['Abenteuer', 'Quest', 'Jagd', 'World', 'Battle', 'Rush', 'Mania', 'Legends'];
+        const prefixes = ['Super', 'Mega', 'Ultra', 'Epic', 'Crazy', 'Wild', 'Hyper', 'Power', 'Turbo', 'Extreme'];
+        const suffixes = ['Abenteuer', 'Quest', 'Jagd', 'World', 'Battle', 'Rush', 'Mania', 'Legends', 'Force', 'Strike'];
+        
+        const gameTypes = [
+            {
+                name: 'Sammel-Spiel',
+                controls: 'Maus bewegen - sammle alle bunten Objekte!',
+                init: initCollectGame,
+                update: updateCollectGame
+            },
+            {
+                name: 'Ausweich-Spiel',
+                controls: 'Maus bewegen - weiche den roten Objekten aus!',
+                init: initDodgeGame,
+                update: updateDodgeGame
+            },
+            {
+                name: 'Klick-Jagd',
+                controls: 'Klicke auf die Ziele bevor sie verschwinden!',
+                init: initClickGame,
+                update: updateClickGame
+            },
+            {
+                name: 'Fang-Spiel',
+                controls: 'Maus bewegen - fange die goldenen Sterne!',
+                init: initCatchGame,
+                update: updateCatchGame
+            },
+            {
+                name: 'Memory-Rennen',
+                controls: 'Klicke Paare an - finde alle zusammen!',
+                init: initMemoryGame,
+                update: updateMemoryGame
+            }
+        ];
         
         generateBtn.addEventListener('click', generateGame);
         resetBtn.addEventListener('click', () => {
@@ -212,17 +254,8 @@
             stopGame();
         });
         
-        canvas.addEventListener('mousemove', (e) => {
-            if (!gameRunning) return;
-            const rect = canvas.getBoundingClientRect();
-            player.x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-        });
-        
-        canvas.addEventListener('click', () => {
-            if (!gameRunning) return;
-            score += 5;
-            scoreEl.textContent = score;
-        });
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('click', handleClick);
         
         function generateGame() {
             const game1 = document.getElementById('game1').value.trim() || 'Spiel 1';
@@ -234,112 +267,302 @@
             const gameName = `${prefix} ${suffix}`;
             gameTitleEl.textContent = gameName.toUpperCase();
             
-            // Reset game
+            // Pick random game type
+            currentGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
+            gameTypeEl.textContent = currentGameType.name;
+            gameControlsEl.innerHTML = `<strong>Steuerung:</strong> ${currentGameType.controls}`;
+            
+            // Reset
             score = 0;
             scoreEl.textContent = score;
-            gameObjects = [];
+            gameState = {};
             
             // Show game
             gameArea.classList.add('show');
             
-            // Start game
+            // Initialize and start
+            currentGameType.init();
             startGame();
         }
         
         function startGame() {
             gameRunning = true;
-            
-            // Spawn objects
-            setInterval(() => {
-                if (!gameRunning) return;
-                spawnObject();
-            }, 1000);
-            
-            // Game loop
             gameLoop();
         }
         
         function stopGame() {
             gameRunning = false;
-            gameObjects = [];
-        }
-        
-        function spawnObject() {
-            const colors = ['#fbbf24', '#60a5fa', '#f87171', '#a78bfa', '#34d399'];
-            const shapes = ['circle', 'square', 'triangle'];
-            
-            gameObjects.push({
-                x: Math.random() * (canvas.width - 40),
-                y: -20,
-                size: 20 + Math.random() * 20,
-                speed: 2 + Math.random() * 3,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                shape: shapes[Math.floor(Math.random() * shapes.length)]
-            });
+            gameState = {};
         }
         
         function gameLoop() {
             if (!gameRunning) return;
             
-            // Clear
             ctx.fillStyle = '#1a1a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            if (currentGameType) {
+                currentGameType.update();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function handleMouseMove(e) {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            gameState.mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+            gameState.mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+        }
+        
+        function handleClick(e) {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+            const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+            gameState.lastClickX = clickX;
+            gameState.lastClickY = clickY;
+        }
+        
+        // GAME 1: Collect Game
+        function initCollectGame() {
+            gameState.player = { x: 300, y: 350, size: 40 };
+            gameState.objects = [];
+            gameState.spawnTimer = 0;
+        }
+        
+        function updateCollectGame() {
+            const player = gameState.player;
+            player.x = gameState.mouseX || 300;
+            
+            // Spawn objects
+            if (gameState.spawnTimer++ % 30 === 0) {
+                gameState.objects.push({
+                    x: Math.random() * (canvas.width - 40),
+                    y: -20,
+                    size: 20 + Math.random() * 20,
+                    speed: 2 + Math.random() * 3,
+                    color: ['#fbbf24', '#60a5fa', '#a78bfa', '#34d399'][Math.floor(Math.random() * 4)]
+                });
+            }
+            
             // Draw player
-            ctx.fillStyle = player.color;
+            ctx.fillStyle = '#4ade80';
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Draw eyes
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(player.x - 8, player.y - 5, 5, 0, Math.PI * 2);
-            ctx.arc(player.x + 8, player.y - 5, 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(player.x - 8, player.y - 5, 3, 0, Math.PI * 2);
-            ctx.arc(player.x + 8, player.y - 5, 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Update and draw objects
-            gameObjects = gameObjects.filter(obj => {
+            // Update objects
+            gameState.objects = gameState.objects.filter(obj => {
                 obj.y += obj.speed;
-                
-                // Draw object
                 ctx.fillStyle = obj.color;
-                if (obj.shape === 'circle') {
-                    ctx.beginPath();
-                    ctx.arc(obj.x, obj.y, obj.size / 2, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (obj.shape === 'square') {
-                    ctx.fillRect(obj.x - obj.size / 2, obj.y - obj.size / 2, obj.size, obj.size);
-                } else if (obj.shape === 'triangle') {
-                    ctx.beginPath();
-                    ctx.moveTo(obj.x, obj.y - obj.size / 2);
-                    ctx.lineTo(obj.x - obj.size / 2, obj.y + obj.size / 2);
-                    ctx.lineTo(obj.x + obj.size / 2, obj.y + obj.size / 2);
-                    ctx.closePath();
-                    ctx.fill();
-                }
+                ctx.beginPath();
+                ctx.arc(obj.x, obj.y, obj.size / 2, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // Check collision
                 const dx = obj.x - player.x;
                 const dy = obj.y - player.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < (obj.size + player.size) / 2) {
+                if (Math.sqrt(dx * dx + dy * dy) < (obj.size + player.size) / 2) {
                     score += 10;
                     scoreEl.textContent = score;
-                    return false; // Remove object
+                    return false;
                 }
-                
                 return obj.y < canvas.height + 50;
             });
+        }
+        
+        // GAME 2: Dodge Game
+        function initDodgeGame() {
+            gameState.player = { x: 300, y: 350, size: 30 };
+            gameState.enemies = [];
+            gameState.spawnTimer = 0;
+        }
+        
+        function updateDodgeGame() {
+            const player = gameState.player;
+            player.x = gameState.mouseX || 300;
             
-            requestAnimationFrame(gameLoop);
+            if (gameState.spawnTimer++ % 25 === 0) {
+                gameState.enemies.push({
+                    x: Math.random() * canvas.width,
+                    y: -20,
+                    size: 30,
+                    speed: 3 + Math.random() * 2
+                });
+            }
+            
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            let allDodged = true;
+            gameState.enemies = gameState.enemies.filter(enemy => {
+                enemy.y += enemy.speed;
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2, enemy.size, enemy.size);
+                
+                const dx = enemy.x - player.x;
+                const dy = enemy.y - player.y;
+                if (Math.sqrt(dx * dx + dy * dy) < (enemy.size + player.size) / 2) {
+                    allDodged = false;
+                }
+                
+                if (enemy.y > canvas.height) {
+                    score += 5;
+                    scoreEl.textContent = score;
+                }
+                return enemy.y < canvas.height + 50;
+            });
+        }
+        
+        // GAME 3: Click Game
+        function initClickGame() {
+            gameState.targets = [];
+            gameState.spawnTimer = 0;
+        }
+        
+        function updateClickGame() {
+            if (gameState.spawnTimer++ % 60 === 0) {
+                gameState.targets.push({
+                    x: 50 + Math.random() * (canvas.width - 100),
+                    y: 50 + Math.random() * (canvas.height - 100),
+                    size: 40,
+                    life: 120
+                });
+            }
+            
+            gameState.targets = gameState.targets.filter(target => {
+                target.life--;
+                const alpha = target.life / 120;
+                ctx.fillStyle = `rgba(251, 191, 36, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, target.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (gameState.lastClickX && gameState.lastClickY) {
+                    const dx = target.x - gameState.lastClickX;
+                    const dy = target.y - gameState.lastClickY;
+                    if (Math.sqrt(dx * dx + dy * dy) < target.size / 2) {
+                        score += 15;
+                        scoreEl.textContent = score;
+                        gameState.lastClickX = null;
+                        return false;
+                    }
+                }
+                return target.life > 0;
+            });
+            gameState.lastClickX = null;
+        }
+        
+        // GAME 4: Catch Game
+        function initCatchGame() {
+            gameState.player = { x: 300, y: 350, size: 50 };
+            gameState.stars = [];
+            gameState.spawnTimer = 0;
+        }
+        
+        function updateCatchGame() {
+            const player = gameState.player;
+            player.x = gameState.mouseX || 300;
+            
+            if (gameState.spawnTimer++ % 40 === 0) {
+                gameState.stars.push({
+                    x: Math.random() * canvas.width,
+                    y: -20,
+                    size: 25,
+                    speed: 2 + Math.random() * 2,
+                    wobble: Math.random() * Math.PI * 2
+                });
+            }
+            
+            ctx.fillStyle = '#a78bfa';
+            ctx.fillRect(player.x - player.size / 2, player.y - 20, player.size, 40);
+            
+            gameState.stars = gameState.stars.filter(star => {
+                star.y += star.speed;
+                star.wobble += 0.1;
+                const wobbleX = Math.sin(star.wobble) * 20;
+                
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                    const x = star.x + wobbleX + Math.cos(angle) * star.size / 2;
+                    const y = star.y + Math.sin(angle) * star.size / 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                if (Math.abs((star.x + wobbleX) - player.x) < (star.size + player.size) / 2 &&
+                    Math.abs(star.y - player.y) < 30) {
+                    score += 20;
+                    scoreEl.textContent = score;
+                    return false;
+                }
+                return star.y < canvas.height + 50;
+            });
+        }
+        
+        // GAME 5: Memory Game
+        function initMemoryGame() {
+            const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+            gameState.cards = [];
+            gameState.flipped = [];
+            gameState.matched = [];
+            
+            const pairs = colors.slice(0, 6);
+            const deck = [...pairs, ...pairs].sort(() => Math.random() - 0.5);
+            
+            for (let i = 0; i < 12; i++) {
+                gameState.cards.push({
+                    x: 80 + (i % 4) * 130,
+                    y: 80 + Math.floor(i / 4) * 110,
+                    size: 100,
+                    color: deck[i],
+                    id: i
+                });
+            }
+        }
+        
+        function updateMemoryGame() {
+            gameState.cards.forEach(card => {
+                const isFlipped = gameState.flipped.includes(card.id) || gameState.matched.includes(card.id);
+                ctx.fillStyle = isFlipped ? card.color : '#374151';
+                ctx.fillRect(card.x - card.size / 2, card.y - card.size / 2, card.size, card.size);
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(card.x - card.size / 2, card.y - card.size / 2, card.size, card.size);
+            });
+            
+            if (gameState.lastClickX && gameState.lastClickY) {
+                const clicked = gameState.cards.find(card => 
+                    Math.abs(card.x - gameState.lastClickX) < card.size / 2 &&
+                    Math.abs(card.y - gameState.lastClickY) < card.size / 2
+                );
+                
+                if (clicked && !gameState.flipped.includes(clicked.id) && !gameState.matched.includes(clicked.id)) {
+                    gameState.flipped.push(clicked.id);
+                    
+                    if (gameState.flipped.length === 2) {
+                        const [id1, id2] = gameState.flipped;
+                        const card1 = gameState.cards[id1];
+                        const card2 = gameState.cards[id2];
+                        
+                        setTimeout(() => {
+                            if (card1.color === card2.color) {
+                                gameState.matched.push(id1, id2);
+                                score += 50;
+                                scoreEl.textContent = score;
+                            }
+                            gameState.flipped = [];
+                        }, 500);
+                    }
+                }
+                gameState.lastClickX = null;
+            }
         }
     </script>
 </body>
